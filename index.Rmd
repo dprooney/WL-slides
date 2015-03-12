@@ -1,0 +1,100 @@
+---
+title       : Caloric Deficit and Weight Loss
+subtitle    : A project for JHU's "Developing Data Products" Coursera course
+author      : DPR
+job         : 
+framework   : io2012      # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : standalone # {standalone, draft}
+knit        : slidify::knit2slides
+---
+<style>
+strong {
+  font-weight: bold;
+}
+</style>
+
+<style>
+em {
+  font-style: italic;
+}
+</style>
+
+## Motivation for this app  
+<br>
+There are many weight loss strategies out there. One of the most common quantitative approaches is to maintain a *caloric deficit*. That is, you must expend more calories than you consume.  
+<br>  
+**Common rule of thumb**: to lose one pound (of fat), one must accumulate a caloric deficit of 3500kcal.  
+<br>
+This app linearly regresses caloric deficit with daily changes in weight. It also addresses the question of time scale:  
+
+- does the day-to-day relationship persist over longer time scales?
+- is there a time lag between a deficit and the subsequent weight loss?
+
+---
+
+## Details
+
+Inputs:
+
+1. Time window over which to average caloric deficit
+2. Time window over which to average weight change
+3. Difference between start of windows (weight change must lag deficit)
+
+Default inputs:
+
+- time windows = 1 day
+- time lag = 0 days
+
+Default data set:
+
+- from author's personal weight/diet log
+- only 68 days (really needs larger sample size)
+
+---
+## Calculation
+
+The app takes the three input integers and forms a new data frame, then runs linear regression:
+```{r}
+wldata <- read.csv('CPdata.csv')
+input <- data.frame(defspan = 1, lossspan = 1, lag = 0)
+N <- 68 - max(input$lossspan + input$lag, input$defspan) + 1
+procdf <- data.frame(Deficit = rep(0,N), Loss = rep(0,N))
+for (j in 1:N){
+  procdf[j,1] = mean(wldata[(j+input$lag):(j+input$defspan-1+input$lag),1])
+  procdf[j,2] = mean(wldata[j:(j+input$lossspan-1),2])}
+mod <- lm(Loss~Deficit, procdf)
+summary(mod)$coefficients
+```
+
+--- .class #id 
+
+## Results
+
+```{r, echo=FALSE, fig.width=9, fig.height=5}
+newdef <- seq(min(wldata$Deficit),max(wldata$Deficit),length.out=100)
+preds <- predict(mod, newdata=data.frame(Deficit=newdef), interval='confidence') 
+
+par(mfrow=c(1,2))
+plot(procdf$Deficit,procdf$Loss,type="n",xlab="Caloric Deficit (kcal)",
+       ylab = "Weight Loss (lbs)",xlim = c(1.1*min(wldata$Deficit),1.1*max(wldata$Deficit)),
+       ylim = c(1.1*min(wldata$Loss),1.1*max(wldata$Loss)),
+     main = "Deficit vs. weight loss for one-day averages", cex = 4
+     )
+
+polygon(c(rev(newdef),newdef),c(rev(preds[,3]),preds[,2]),col='grey80',border=NA)
+points(procdf$Deficit,procdf$Loss,col="blue" )
+abline(mod,col="red",lwd=3)
+        
+oneovercoeff <- c(1081.227,1516.678,2251.963,2399.597,2923.915,3699.472,5169.815,6557.824,5832.355,5922.983,6969.808,5943.782,5172.052,4986.96,4851.375,4551.48,5544.624)
+plot(1:17,oneovercoeff,xlab="Averaging length (days)", ylab="1/coefficient (kcal/lbs)",main="Required caloric deficit vs. time scale")
+```
+
+- The default plot is on the left, suggesting a deficit of 1000-1100kcal is needed to lose one pound.
+- As shown on the right, if one increases `lossspan` and `defspan` concurrently, this figure increases and then levels off around 5000-6000kcal.
+
+
+
+
