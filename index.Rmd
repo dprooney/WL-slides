@@ -93,7 +93,7 @@ plot(1:17,oneovercoeff,xlab="Averaging length (days)", ylab="1/coefficient (kcal
 ```
 
 - The default plot is on the left, suggesting a deficit of 1000-1100kcal is needed to lose one pound.
-- As shown on the right, if one increases `lossspan` and `defspan` concurrently, this figure increases and then levels off around 5000-6000kcal.
+- As shown on the right, if one increases `lossspan` and `defspan` concurrently, the needed deficit increases and then levels off around 5000-6000kcal.
 
 
 

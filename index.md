@@ -83,7 +83,7 @@ summary(mod)$coefficients
 ![plot of chunk unnamed-chunk-2](assets/fig/unnamed-chunk-2-1.png) 
 
 - The default plot is on the left, suggesting a deficit of 1000-1100kcal is needed to lose one pound.
-- As shown on the right, if one increases `lossspan` and `defspan` concurrently, this figure increases and then levels off around 5000-6000kcal.
+- As shown on the right, if one increases `lossspan` and `defspan` concurrently, the needed deficit increases and then levels off around 5000-6000kcal.
 
 
 
